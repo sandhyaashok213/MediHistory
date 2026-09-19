@@ -56,6 +56,17 @@ function PatientDashboard() {
         </Link>
       </div>
 
+      <br />
+
+      {/* Medical Documents */}
+      <div>
+        <Link to="/patient/documents">
+          <button>
+            My Medical Documents
+          </button>
+        </Link>
+      </div>
+
       <hr />
 
       <h2>My Health History</h2>

@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import PatientHistory from "./pages/patient/PatientHistory";
 import Medications from "./pages/patient/Medications";
 import Allergies from "./pages/patient/Allergies";
+import MedicalDocuments from "./pages/patient/MedicalDocuments";
 
 import NotFound from "./pages/NotFound";
 import Layout from "./layouts/Layout";
@@ -84,6 +85,11 @@ function App() {
   element={<Allergies />}
 />
         </Route>
+
+        <Route
+  path="/patient/documents"
+  element={<MedicalDocuments />}
+/>
 
       </Routes>
     </BrowserRouter>
