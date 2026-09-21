@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import "./Auth.css";
 
 function Login() {
@@ -9,7 +9,6 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +31,10 @@ function Login() {
       localStorage.setItem("token", response.data.token);
 
       // Save user information
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+      );
 
       // Redirect based on role
       const role = response.data.user.role;
@@ -46,7 +48,10 @@ function Login() {
       }
     } catch (error) {
       if (error.response) {
-        setError(error.response.data.message);
+        setError(
+          error.response.data.message ||
+            "Invalid email or password"
+        );
       } else {
         setError("Unable to connect to the server");
       }
@@ -57,42 +62,89 @@ function Login() {
 
   return (
     <div className="auth-page">
+
+      <div className="auth-background-shape shape-one"></div>
+      <div className="auth-background-shape shape-two"></div>
+
       <div className="auth-card">
-        <h1>MediHistory</h1>
+
+        <div className="auth-logo">
+          🩺
+        </div>
+
+        <p className="auth-brand">
+          MEDIHISTORY
+        </p>
+
+        <h1>
+          Welcome Back
+        </h1>
 
         <p className="auth-subtitle">
           AI-Powered Clinical History System
         </p>
 
-        <form className="auth-form" onSubmit={handleLogin}>
-          <div>
-            <label>Email</label>
+        <div className="auth-welcome">
+          <span>🔐</span>
+          <p>
+            Sign in to securely access your medical history.
+          </p>
+        </div>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <form
+          className="auth-form"
+          onSubmit={handleLogin}
+        >
+
+          <div className="form-group">
+            <label>
+              Email Address
+            </label>
+
+            <div className="input-wrapper">
+              <span className="input-icon">
+                ✉️
+              </span>
+
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label>Password</label>
+          <div className="form-group">
+            <label>
+              Password
+            </label>
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">
+                🔒
+              </span>
+
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
+                required
+              />
+            </div>
           </div>
 
           {error && (
-            <p style={{ color: "red" }}>
-              {error}
-            </p>
+            <div className="auth-error">
+              <span>⚠️</span>
+              <p>{error}</p>
+            </div>
           )}
 
           <button
@@ -100,16 +152,46 @@ function Login() {
             className="auth-button"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <>
+                <span className="button-spinner"></span>
+                Logging in...
+              </>
+            ) : (
+              <>
+                Login
+                <span>→</span>
+              </>
+            )}
           </button>
+
         </form>
+
+        <div className="auth-divider">
+          <span></span>
+          <p>Secure Healthcare Access</p>
+          <span></span>
+        </div>
 
         <p className="auth-link">
           Don't have an account?{" "}
           <Link to="/register">
-            Register
+            Create Account
           </Link>
         </p>
+
+        <div className="auth-security">
+          <span>🔒</span>
+          <p>
+            Your healthcare information is protected
+            and securely handled.
+          </p>
+        </div>
+
+        <p className="auth-footer">
+          MediHistory • Digital Patient Medical History System
+        </p>
+
       </div>
     </div>
   );

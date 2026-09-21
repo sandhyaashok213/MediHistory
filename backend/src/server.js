@@ -10,6 +10,7 @@ const authenticateToken = require("./middleware/authMiddleware");
 const medicationRoutes = require("./routes/medicationRoutes");
 const allergyRoutes = require("./routes/allergyRoutes");
 const medicalDocumentRoutes = require("./routes/medicalDocumentRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/patient", historyRoutes);
 app.use("/api/patient", allergyRoutes);
 app.use("/api/patient", medicationRoutes);
 app.use("/api/patient", medicalDocumentRoutes);
+app.use("/api/doctor", doctorRoutes);
 
 // Test backend
 app.get("/", (req, res) => {

@@ -144,6 +144,37 @@ const updateOCRText = (
 };
 
 // =====================================
+// Update AI Summary
+// =====================================
+
+const updateAISummary = (
+  documentId,
+  patientId,
+  aiSummary,
+  callback
+) => {
+  const sql = `
+    UPDATE medical_documents
+    SET
+      ai_summary = ?
+    WHERE id = ?
+    AND patient_id = ?
+  `;
+
+  db.query(
+    sql,
+    [
+      aiSummary,
+      documentId,
+      patientId,
+    ],
+    (err, result) => {
+      callback(err, result);
+    }
+  );
+};
+
+// =====================================
 // Export Functions
 // =====================================
 
@@ -153,4 +184,5 @@ module.exports = {
   findDocumentById,
   deleteMedicalDocument,
   updateOCRText,
+  updateAISummary,
 };
