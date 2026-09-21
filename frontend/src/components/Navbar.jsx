@@ -1,10 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useVoiceLanguage } from "./VoiceLanguageContext";
 import "./Navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
+
+  const {
+    language,
+    setLanguage,
+    languages,
+    t,
+  } = useVoiceLanguage();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -13,6 +22,7 @@ function Navbar() {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
+        console.error("Invalid user data:", error);
         localStorage.removeItem("user");
       }
     }
@@ -29,41 +39,89 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
 
-        <Link to="/" className="navbar-logo">
-          <span className="logo-icon">✚</span>
-          <span className="logo-text">MediHistory</span>
+        <Link
+          to="/"
+          className="navbar-logo"
+        >
+          <span className="logo-icon">
+            ✚
+          </span>
+
+          <span className="logo-text">
+            MediHistory
+          </span>
         </Link>
 
         <div className="navbar-right">
+
+          <div className="voice-language-selector">
+            <span className="language-icon">
+              🌐
+            </span>
+
+            <select
+              value={language}
+              onChange={(event) =>
+                setLanguage(event.target.value)
+              }
+              className="voice-language-select"
+              aria-label={t("voiceLanguage")}
+            >
+              {languages.map((item) => (
+                <option
+                  key={item.code}
+                  value={item.code}
+                >
+                  {item.nativeLabel}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {!user ? (
             <div className="guest-navigation">
-              <Link to="/login" className="nav-link">
-                Login
+
+              <Link
+                to="/login"
+                className="nav-link"
+              >
+                {t("login")}
               </Link>
 
-              <Link to="/register" className="nav-register">
-                Register
+              <Link
+                to="/register"
+                className="nav-register"
+              >
+                {t("register")}
               </Link>
+
             </div>
           ) : (
             <div className="user-navigation">
 
               <div className="user-info">
+
                 <div className="user-avatar">
                   {user.name
-                    ? user.name.charAt(0).toUpperCase()
+                    ? user.name
+                        .charAt(0)
+                        .toUpperCase()
                     : "U"}
                 </div>
 
                 <div className="user-details">
+
                   <span className="welcome-text">
-                    Welcome, {user.name}
+                    {t("welcome")},{" "}
+                    {user.name}
                   </span>
 
                   <span className="role-badge">
-                    {user.role}
+                    {t(user.role)}
                   </span>
+
                 </div>
+
               </div>
 
               {user.role === "patient" && (
@@ -74,7 +132,7 @@ function Navbar() {
                     className="nav-link"
                   >
                     <span>⌂</span>
-                    Dashboard
+                    {t("dashboard")}
                   </Link>
 
                   <Link
@@ -82,7 +140,7 @@ function Navbar() {
                     className="nav-link"
                   >
                     <span>👤</span>
-                    Profile
+                    {t("profile")}
                   </Link>
 
                   <Link
@@ -90,7 +148,7 @@ function Navbar() {
                     className="nav-link"
                   >
                     <span>📋</span>
-                    Medical History
+                    {t("medicalHistory")}
                   </Link>
 
                 </div>
@@ -98,25 +156,29 @@ function Navbar() {
 
               {user.role === "doctor" && (
                 <div className="navigation-links">
+
                   <Link
                     to="/doctor/dashboard"
                     className="nav-link"
                   >
                     <span>⌂</span>
-                    Dashboard
+                    {t("dashboard")}
                   </Link>
+
                 </div>
               )}
 
               {user.role === "admin" && (
                 <div className="navigation-links">
+
                   <Link
                     to="/admin/dashboard"
                     className="nav-link"
                   >
                     <span>⌂</span>
-                    Dashboard
+                    {t("dashboard")}
                   </Link>
+
                 </div>
               )}
 
@@ -126,13 +188,13 @@ function Navbar() {
                 onClick={handleLogout}
               >
                 <span>↪</span>
-                Logout
+                {t("logout")}
               </button>
 
             </div>
           )}
-        </div>
 
+        </div>
       </div>
     </nav>
   );
