@@ -3,10 +3,10 @@ import Navbar from "../components/Navbar";
 
 function Layout() {
   return (
-    <div>
+    <div className="layout">
       <Navbar />
 
-      <main>
+      <main className="layout-content">
         <Outlet />
       </main>
     </div>
