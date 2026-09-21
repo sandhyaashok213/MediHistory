@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import VoiceTextarea from "../../components/VoiceTextarea";
 
 function PatientHistory() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ function PatientHistory() {
   const [doctorReviewed, setDoctorReviewed] = useState(false);
   const [doctorReviewedAt, setDoctorReviewedAt] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -28,7 +30,7 @@ function PatientHistory() {
           "http://localhost:5000/api/patient/history",
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: "Bearer " + token,
             },
           }
         );
@@ -91,11 +93,24 @@ function PatientHistory() {
     }
   };
 
+  const handleVoiceChange = (fieldName, value) => {
+    setFormData({
+      ...formData,
+      [fieldName]: value,
+    });
+
+    if (doctorReviewed) {
+      setDoctorReviewed(false);
+      setDoctorReviewedAt(null);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setMessage("");
     setError("");
+    setSaving(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -105,7 +120,7 @@ function PatientHistory() {
         url: "http://localhost:5000/api/patient/history",
         data: formData,
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: "Bearer " + token,
         },
       });
 
@@ -117,6 +132,11 @@ function PatientHistory() {
       setHistoryExists(true);
       setDoctorReviewed(false);
       setDoctorReviewedAt(null);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     } catch (error) {
       console.error(error);
 
@@ -128,6 +148,8 @@ function PatientHistory() {
       } else {
         setError("Unable to connect to the server");
       }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -136,8 +158,12 @@ function PatientHistory() {
       <div style={styles.loadingPage}>
         <div style={styles.loadingCard}>
           <div style={styles.spinner}>⏳</div>
-          <h2>Loading Medical History</h2>
-          <p>Please wait...</p>
+          <h2 style={styles.loadingTitle}>
+            Loading Medical History
+          </h2>
+          <p style={styles.loadingText}>
+            Please wait...
+          </p>
         </div>
       </div>
     );
@@ -228,26 +254,44 @@ function PatientHistory() {
 
         {message && (
           <div style={styles.successMessage}>
-            <span>✓</span>
+            <span style={styles.messageIcon}>✓</span>
+
             <div>
-              <strong>Success</strong>
-              <p>{message}</p>
+              <strong style={styles.messageTitle}>
+                Success
+              </strong>
+
+              <p style={styles.messageText}>
+                {message}
+              </p>
             </div>
           </div>
         )}
 
         {error && (
           <div style={styles.errorMessage}>
-            <span>⚠️</span>
+            <span style={styles.messageIcon}>⚠️</span>
+
             <div>
-              <strong>Error</strong>
-              <p>{error}</p>
+              <strong style={styles.messageTitle}>
+                Error
+              </strong>
+
+              <p style={styles.messageText}>
+                {error}
+              </p>
             </div>
           </div>
         )}
 
         <div style={styles.reviewCard}>
-          <div style={styles.reviewIcon}>
+          <div
+            style={
+              doctorReviewed
+                ? styles.reviewIconConfirmed
+                : styles.reviewIconPending
+            }
+          >
             {doctorReviewed ? "✓" : "🕐"}
           </div>
 
@@ -291,6 +335,24 @@ function PatientHistory() {
           </div>
         </div>
 
+        <div style={styles.voiceInfoCard}>
+          <div style={styles.voiceInfoIcon}>
+            🎤
+          </div>
+
+          <div>
+            <h3 style={styles.voiceInfoTitle}>
+              Voice Input Available
+            </h3>
+
+            <p style={styles.voiceInfoText}>
+              Click the Speak button beside any field and describe
+              your medical information using your voice. You can
+              edit the text before saving.
+            </p>
+          </div>
+        </div>
+
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
             <div>
@@ -304,7 +366,7 @@ function PatientHistory() {
             </div>
 
             <span style={styles.requiredText}>
-              All information is private
+              🔒 Private Information
             </span>
           </div>
 
@@ -327,13 +389,16 @@ function PatientHistory() {
                     {field.title}
                   </label>
 
-                  <textarea
-                    name={field.name}
-                    placeholder={field.placeholder}
+                  <VoiceTextarea
                     value={formData[field.name]}
-                    onChange={handleChange}
+                    onChange={(value) =>
+                      handleVoiceChange(
+                        field.name,
+                        value
+                      )
+                    }
+                    placeholder={field.placeholder}
                     rows={field.rows}
-                    style={styles.textarea}
                   />
                 </div>
               ))}
@@ -341,14 +406,30 @@ function PatientHistory() {
 
             <div style={styles.formFooter}>
               <div style={styles.footerInfo}>
-                🔒 Your information is securely stored.
+                <span style={styles.footerIcon}>
+                  🔒
+                </span>
+
+                <span>
+                  Your medical information is securely stored.
+                </span>
               </div>
 
               <button
                 type="submit"
-                style={styles.saveButton}
+                style={
+                  saving
+                    ? {
+                        ...styles.saveButton,
+                        ...styles.saveButtonDisabled,
+                      }
+                    : styles.saveButton
+                }
+                disabled={saving}
               >
-                💾 Save Medical History
+                {saving
+                  ? "⏳ Saving..."
+                  : "💾 Save Medical History"}
               </button>
             </div>
           </form>
@@ -414,6 +495,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     fontSize: "34px",
+    flexShrink: 0,
   },
 
   successMessage: {
@@ -440,6 +522,21 @@ const styles = {
     marginBottom: "20px",
   },
 
+  messageIcon: {
+    fontSize: "18px",
+    lineHeight: 1,
+    marginTop: "2px",
+  },
+
+  messageTitle: {
+    fontSize: "14px",
+  },
+
+  messageText: {
+    margin: "5px 0 0",
+    fontSize: "13px",
+  },
+
   reviewCard: {
     background: "white",
     border: "1px solid #e5e7eb",
@@ -448,17 +545,30 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "16px",
-    marginBottom: "25px",
+    marginBottom: "20px",
     boxShadow:
       "0 4px 15px rgba(0,0,0,0.04)",
   },
 
-  reviewIcon: {
+  reviewIconConfirmed: {
     width: "48px",
     height: "48px",
     borderRadius: "12px",
-    background: "#ecfdf5",
-    color: "#047857",
+    background: "#dcfce7",
+    color: "#166534",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "22px",
+    flexShrink: 0,
+  },
+
+  reviewIconPending: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    background: "#fef3c7",
+    color: "#92400e",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -502,6 +612,7 @@ const styles = {
     borderRadius: "20px",
     fontSize: "12px",
     fontWeight: "700",
+    whiteSpace: "nowrap",
   },
 
   statusPending: {
@@ -511,6 +622,43 @@ const styles = {
     borderRadius: "20px",
     fontSize: "12px",
     fontWeight: "700",
+    whiteSpace: "nowrap",
+  },
+
+  voiceInfoCard: {
+    background: "#eff6ff",
+    border: "1px solid #bfdbfe",
+    borderRadius: "16px",
+    padding: "18px 20px",
+    marginBottom: "25px",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "14px",
+  },
+
+  voiceInfoIcon: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "11px",
+    background: "#dbeafe",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "20px",
+    flexShrink: 0,
+  },
+
+  voiceInfoTitle: {
+    margin: "0 0 4px",
+    fontSize: "15px",
+    color: "#1e3a8a",
+  },
+
+  voiceInfoText: {
+    margin: 0,
+    color: "#475569",
+    fontSize: "13px",
+    lineHeight: 1.6,
   },
 
   formCard: {
@@ -529,6 +677,7 @@ const styles = {
     marginBottom: "28px",
     paddingBottom: "20px",
     borderBottom: "1px solid #e5e7eb",
+    gap: "20px",
   },
 
   formTitle: {
@@ -550,6 +699,7 @@ const styles = {
     padding: "8px 12px",
     borderRadius: "20px",
     fontWeight: "600",
+    whiteSpace: "nowrap",
   },
 
   formGrid: {
@@ -584,22 +734,6 @@ const styles = {
     fontSize: "17px",
   },
 
-  textarea: {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1px solid #d1d5db",
-    borderRadius: "11px",
-    padding: "13px 14px",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    lineHeight: "1.5",
-    color: "#1f2937",
-    background: "#fafafa",
-    outline: "none",
-    resize: "vertical",
-    minHeight: "110px",
-  },
-
   formFooter: {
     marginTop: "30px",
     paddingTop: "22px",
@@ -611,8 +745,15 @@ const styles = {
   },
 
   footerInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "7px",
     color: "#6b7280",
     fontSize: "12px",
+  },
+
+  footerIcon: {
+    fontSize: "14px",
   },
 
   saveButton: {
@@ -629,12 +770,18 @@ const styles = {
       "0 5px 15px rgba(15,118,110,0.2)",
   },
 
+  saveButtonDisabled: {
+    opacity: 0.65,
+    cursor: "not-allowed",
+  },
+
   loadingPage: {
     minHeight: "calc(100vh - 70px)",
     background: "#f5f8fc",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    padding: "30px",
   },
 
   loadingCard: {
@@ -649,6 +796,16 @@ const styles = {
   spinner: {
     fontSize: "35px",
     marginBottom: "10px",
+  },
+
+  loadingTitle: {
+    margin: "0 0 6px",
+    color: "#111827",
+  },
+
+  loadingText: {
+    margin: 0,
+    color: "#6b7280",
   },
 };
 
